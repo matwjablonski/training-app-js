@@ -1,0 +1,8 @@
+.card[data-done="true"] {
+  background-color: green !important;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
