@@ -14,6 +14,9 @@ export class FilterBar extends Component {
     this.handleSearchChange = this.handleSearchChange.bind(this);
     this.handlePriorityChange = this.handlePriorityChange.bind(this);
     
+    // Debounce timer for search
+    this.searchTimeout = null;
+    
     this.subscribeStore('todos', 'data');
   }
 
@@ -28,11 +31,20 @@ export class FilterBar extends Component {
 
   handleSearchChange(event) {
     this.searchQuery = event.target.value;
-    this.onArgChange('onFilterChange', { 
-      filter: this.currentFilter, 
-      search: this.searchQuery, 
-      priority: this.priorityFilter 
-    });
+    
+    // Clear existing timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
+    
+    // Set new timeout to debounce the search
+    this.searchTimeout = setTimeout(() => {
+      this.onArgChange('onFilterChange', { 
+        filter: this.currentFilter, 
+        search: this.searchQuery, 
+        priority: this.priorityFilter 
+      });
+    }, 300); // 300ms delay
   }
 
   handlePriorityChange(event) {
@@ -123,36 +135,38 @@ export class FilterBar extends Component {
           ]
         ),
         
-        // Search bar
-        this.createElement(
-          'div',
-          { class: 'field mb-4' },
-          [
-            this.createElement(
-              'div',
-              { class: 'control has-icons-left' },
-              [
-                this.createElement(
-                  'input',
-                  {
-                    class: 'input',
-                    type: 'text',
-                    placeholder: 'Wyszukaj zadania...',
-                    value: searchQuery,
-                    onInput: (event) => this.handleSearchChange(event)
-                  }
-                ),
-                this.createElement(
-                  'span',
-                  { class: 'icon is-small is-left' },
-                  [
-                    this.createElement('i', { class: 'fas fa-search' })
-                  ]
-                )
-              ]
-            )
-          ]
-        ),
+        // Search field - created manually to avoid re-render issues
+        (() => {
+          const field = document.createElement('div');
+          field.className = 'field mb-4';
+          
+          const control = document.createElement('div');
+          control.className = 'control has-icons-left';
+          
+          const input = document.createElement('input');
+          input.className = 'input';
+          input.type = 'text';
+          input.placeholder = 'Wyszukaj zadania...';
+          input.value = searchQuery;
+          
+          // Add event listener that preserves focus
+          input.addEventListener('input', (event) => {
+            this.handleSearchChange(event);
+          });
+          
+          const iconSpan = document.createElement('span');
+          iconSpan.className = 'icon is-small is-left';
+          
+          const icon = document.createElement('i');
+          icon.className = 'fas fa-search';
+          
+          iconSpan.appendChild(icon);
+          control.appendChild(input);
+          control.appendChild(iconSpan);
+          field.appendChild(control);
+          
+          return field;
+        })(),
 
         // Filters row
         this.createElement(
