@@ -3,8 +3,26 @@ import { Service } from '../lib/Service';
 export class DataStoreService extends Service {
   constructor(services, store = {}) {
     super(services);
-    this.store = store;
+    this.store = this.loadFromLocalStorage() || store;
     this.subscribers = {};
+  }
+
+  loadFromLocalStorage() {
+    try {
+      const data = localStorage.getItem('todoApp_data');
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      return null;
+    }
+  }
+
+  saveToLocalStorage() {
+    try {
+      localStorage.setItem('todoApp_data', JSON.stringify(this.store));
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
   }
 
   subscribe(key, callback) {
@@ -22,6 +40,7 @@ export class DataStoreService extends Service {
 
   set(key, value) {
     this.store[key] = value;
+    this.saveToLocalStorage();
     this.notify(key);
   }
 
@@ -30,6 +49,7 @@ export class DataStoreService extends Service {
       this.store[key] = [];
     }
     this.store[key].push(value);
+    this.saveToLocalStorage();
     this.notify(key);
   }
 
@@ -49,6 +69,7 @@ export class DataStoreService extends Service {
   removeByValue(key, property, value) {
     if (this.store[key]) {
       this.store[key] = this.store[key].filter(item => item[property] !== value);
+      this.saveToLocalStorage();
       this.notify(key);
     }
   }

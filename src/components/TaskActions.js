@@ -4,22 +4,33 @@ export class TaskActions extends Component {
   constructor(args) {
     super(args);
 
+    // Bind methods
+    this.onToggleStatus = this.onToggleStatus.bind(this);
+    this.onChangePriority = this.onChangePriority.bind(this);
+    this.onRemove = this.onRemove.bind(this);
+
     this.subscribeStore('todos', 'data');
+  }
+
+  // Get current todo data from store
+  getCurrentTodo() {
+    const todos = this.data || [];
+    return todos.find(todo => todo.id === this.taskId);
   }
 
   addAction(action) {
     this.actions.push(action);
   }
 
-  onDone(e) {
-    this.component.parentElement.dataset.done = true;
-    this.services.TodosService.markTodoAsDone(this.taskId);
-    this.onArgChange('done', true);
+  onToggleStatus(e) {
+    this.services.TodosService.toggleTodoStatus(this.taskId);
+    // Let the store update trigger re-render of parent component
   }
 
-  onUndone(e) {
-    this.component.parentElement.dataset.done = false;
-    this.onArgChange('done', false);
+  onChangePriority(event) {
+    const priority = parseInt(event.target.value);
+    this.services.TodosService.updateTodoPriority(this.taskId, priority);
+    // Don't use onArgChange - let the store update trigger re-render
   }
 
   onRemove() {
@@ -27,24 +38,60 @@ export class TaskActions extends Component {
   }
 
   render() {
+    // Get current todo data from store
+    const currentTodo = this.getCurrentTodo();
+    const done = currentTodo?.done || this.done;
+    const priority = currentTodo?.priority || this.priority || 2;
+
     return this.createElement(
       'div',
       { class: 'card-footer' },
       [
+        // Toggle status button
         this.createElement(
           'button', 
-          { class: 'card-footer-item', onclick: this.onDone },
-          [this.doneLabel]
+          { 
+            class: `card-footer-item ${done ? 'has-text-warning' : 'has-text-success'}`,
+            onClick: () => this.onToggleStatus() 
+          },
+          [done ? '↶ Przywróć' : '✓ Ukończ']
         ),
+        
+        // Priority selector
         this.createElement(
-          'button', 
-          { class: 'card-footer-item', onclick: this.onUndone },
-          [this.undoneLabel]
+          'div',
+          { class: 'card-footer-item' },
+          [
+            this.createElement(
+              'div',
+              { class: 'select is-small' },
+              [
+                this.createElement(
+                  'select',
+                  {
+                    value: priority.toString(),
+                    onChange: (event) => this.onChangePriority(event),
+                    disabled: done || undefined
+                  },
+                  [
+                    this.createElement('option', { value: '1' }, ['🔴 Wysoki']),
+                    this.createElement('option', { value: '2' }, ['🟡 Średni']),
+                    this.createElement('option', { value: '3' }, ['🟢 Niski'])
+                  ]
+                )
+              ]
+            )
+          ]
         ),
+        
+        // Remove button
         this.createElement(
           'button', 
-          { class: 'card-footer-item', onclick: this.onRemove, disabled: this.done || undefined },
-          [this.removeLabel]
+          { 
+            class: 'card-footer-item has-text-danger', 
+            onClick: () => this.onRemove()
+          },
+          ['🗑️ ' + this.removeLabel]
         )
       ]
     );

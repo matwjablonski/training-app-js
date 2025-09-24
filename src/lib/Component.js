@@ -69,6 +69,9 @@ export class Component {
         // Skip setting attributes that are null or undefined
       } else if (value === true) {
         element.setAttribute(key, '');
+      } else if (key === 'value' && (tag === 'select' || tag === 'input' || tag === 'textarea')) {
+        // Set value as DOM property for form elements
+        element.value = attributes[key];
       } else {
         element.setAttribute(key, attributes[key]);
       }
@@ -94,6 +97,11 @@ export class Component {
       });
     }
 
+    // Set value for select elements after children are added
+    if (tag === 'select' && attributes.value !== undefined) {
+      element.value = attributes.value;
+    }
+
     return element;
   }
 
@@ -104,8 +112,17 @@ export class Component {
   }
 
   onArgChange(key, newValue) {
-    this[key] = newValue;
+    // If key is a function (callback), call it with newValue
+    if (typeof this[key] === 'function') {
+      this[key](newValue);
+    } else {
+      // Otherwise set as property and rerender
+      this[key] = newValue;
+      this.#rerender();
+    }
+  }
 
+  rerender() {
     this.#rerender();
   }
 
