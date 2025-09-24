@@ -68,13 +68,7 @@ export class AddTodo extends Component {
   }
 
   handleSubmit() {
-    console.log('HandleSubmit called');
-    console.log('Form data:', this.form);
-    console.log('Services available:', !!this.services);
-    console.log('TodosService available:', !!this.services?.TodosService);
-    
     if (!this.validateForm()) {
-      console.log('Validation failed, errors:', this.errors);
       this.rerender();
       return;
     }
@@ -86,7 +80,6 @@ export class AddTodo extends Component {
       due_date: this.form?.due_date || null
     };
 
-    console.log('Calling addTodo with:', todo);
     this.services.TodosService.addTodo(todo);
     
     // Clear form

@@ -61,9 +61,6 @@ export class FilterBar extends Component {
     const searchQuery = this.searchQuery || '';
     const priorityFilter = this.priorityFilter || 'all';
     
-    // Debug
-    console.log('FilterBar render:', { currentFilter, searchQuery, priorityFilter });
-    
     return this.createElement(
       'div',
       { class: 'box mb-4' },

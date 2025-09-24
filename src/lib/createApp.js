@@ -4,16 +4,23 @@ export const createApp = (container, childComponents = [], appServices = []) => 
   const app = document.createElement('div');
   app.className = 'app';
 
-  const services = {};
+  let services = {};
 
-  appServices.forEach(Service => {
-    if (typeof Service === 'function') {
-      const newService = new Service(services);
-      services[newService.constructor.name] = newService;
-    } else {
-      console.warn('Service is not a valid function:', Service);
-    }
-  });
+  // Handle both service instances and service classes
+  if (Array.isArray(appServices)) {
+    // Legacy mode: array of service classes
+    appServices.forEach(Service => {
+      if (typeof Service === 'function') {
+        const newService = new Service(services);
+        services[newService.constructor.name] = newService;
+      } else {
+        console.warn('Service is not a valid function:', Service);
+      }
+    });
+  } else if (typeof appServices === 'object' && appServices !== null) {
+    // New mode: object with service instances
+    services = appServices;
+  }
 
   Component.prototype.services = services;
 

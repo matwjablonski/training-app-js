@@ -10,17 +10,13 @@ export class TodosService extends Service {
   }
 
   async addTodo(todo) {
-    console.log('AddTodo called with:', todo);
     const todos = this.DataStoreService.get('todos');
-    console.log('Current todos:', todos);
     todo.id = todos.length ? Math.max(...todos.map(t => t.id)) + 1 : 1;
     todo.done = false;
     todo.created_at = new Date().toISOString();
     todo.priority = todo.priority || 2; // Default medium priority
-    console.log('Final todo to add:', todo);
 
     this.DataStoreService.add('todos', todo);
-    console.log('Todo added, new list:', this.DataStoreService.get('todos'));
   }
 
   async markTodoAsDone(todoId) {

@@ -64,7 +64,8 @@ export class Component {
       const value = attributes[key];
 
       if (key.startsWith('on')) {
-        element.addEventListener(key.substring(2).toLowerCase(), attributes[key].bind(this));
+        const eventHandler = typeof attributes[key] === 'function' ? attributes[key] : attributes[key].bind(this);
+        element.addEventListener(key.substring(2).toLowerCase(), eventHandler);
       } else if (value === null || value === undefined) {
         // Skip setting attributes that are null or undefined
       } else if (value === true) {
