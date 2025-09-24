@@ -8,7 +8,9 @@ export class TaskActions extends Component {
     this.onToggleStatus = this.onToggleStatus.bind(this);
     this.onChangePriority = this.onChangePriority.bind(this);
     this.onRemove = this.onRemove.bind(this);
+  }
 
+  afterServicesInjected() {
     this.subscribeStore('todos', 'data');
   }
 
@@ -23,18 +25,24 @@ export class TaskActions extends Component {
   }
 
   onToggleStatus(e) {
-    this.services.TodosService.toggleTodoStatus(this.taskId);
-    // Let the store update trigger re-render of parent component
+    if (this.services?.TodosService) {
+      this.services.TodosService.toggleTodoStatus(this.taskId);
+      // Let the store update trigger re-render of parent component
+    }
   }
 
   onChangePriority(event) {
     const priority = parseInt(event.target.value);
-    this.services.TodosService.updateTodoPriority(this.taskId, priority);
-    // Don't use onArgChange - let the store update trigger re-render
+    if (this.services?.TodosService) {
+      this.services.TodosService.updateTodoPriority(this.taskId, priority);
+      // Don't use onArgChange - let the store update trigger re-render
+    }
   }
 
   onRemove() {
-    this.services.TodosService.removeTodoById(this.taskId);
+    if (this.services?.TodosService) {
+      this.services.TodosService.removeTodoById(this.taskId);
+    }
   }
 
   render() {

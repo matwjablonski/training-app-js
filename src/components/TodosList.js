@@ -14,16 +14,19 @@ export class TodosList extends Component {
     
     // Bind methods
     this.handleFilterChange = this.handleFilterChange.bind(this);
-    
-    this.subscribeStore('todos', 'data');
   }
 
-  getAsyncActions() {
-    return [this.fetchData.bind(this)];
+  afterServicesInjected() {
+    this.subscribeStore('todos', 'data');
+    
+    // Fetch initial data
+    this.fetchData();
   }
 
   async fetchData() {
-    await this.services.TodosService.fetchTodos();
+    if (this.services && this.services.TodosService) {
+      await this.services.TodosService.fetchTodos();
+    }
   }
 
   handleFilterChange({ filter, search, priority }) {
@@ -76,29 +79,57 @@ export class TodosList extends Component {
   }
 
   render() {
-    const filteredTodos = this.services.TodosService.getFilteredTodos(
+    // Safe access to services - fallback to empty array if not available yet
+    const filteredTodos = this.services?.TodosService?.getFilteredTodos(
       this.currentFilter, 
       this.searchQuery, 
       this.priorityFilter
-    );
+    ) || [];
 
     return this.createElement(
       'main',
       { class: 'container', 'data-testId': 'test-action-list-wrapper' },
       [
         // Filter Bar
-        new FilterBar({
-          onFilterChange: this.handleFilterChange,
-          currentFilter: this.currentFilter,
-          searchQuery: this.searchQuery,
-          priorityFilter: this.priorityFilter
-        }),
+        (() => {
+          const filterBar = new FilterBar({
+            onFilterChange: this.handleFilterChange,
+            currentFilter: this.currentFilter,
+            searchQuery: this.searchQuery,
+            priorityFilter: this.priorityFilter
+          });
+          
+          // Manually inject services before using the component
+          if (this.services && filterBar.injectServices) {
+            filterBar.injectServices(this.services);
+          }
+          
+          return filterBar;
+        })(),
 
         // Bulk Actions
-        new BulkActions(),
+        (() => {
+          const bulkActions = new BulkActions();
+          
+          // Manually inject services before using the component
+          if (this.services && bulkActions.injectServices) {
+            bulkActions.injectServices(this.services);
+          }
+          
+          return bulkActions;
+        })(),
 
         // Add Todo Form
-        new AddTodo(),
+        (() => {
+          const addTodo = new AddTodo();
+          
+          // Manually inject services before using the component
+          if (this.services && addTodo.injectServices) {
+            addTodo.injectServices(this.services);
+          }
+          
+          return addTodo;
+        })(),
 
         // Results info
         this.createElement(
@@ -189,12 +220,21 @@ export class TodosList extends Component {
                       ]
                     ),
 
-                    new TaskActions({
-                      removeLabel: 'Usuń zadanie', 
-                      done: done,
-                      taskId: id,
-                      priority: priority
-                    })
+                    (() => {
+                      const taskActions = new TaskActions({
+                        removeLabel: 'Usuń zadanie', 
+                        done: done,
+                        taskId: id,
+                        priority: priority
+                      });
+                      
+                      // Manually inject services before using the component
+                      if (this.services && taskActions.injectServices) {
+                        taskActions.injectServices(this.services);
+                      }
+                      
+                      return taskActions;
+                    })()
                   ]
                 );
               })

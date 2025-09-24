@@ -3,20 +3,30 @@ import { Component } from '../lib/Component';
 export class BulkActions extends Component {
   constructor(args) {
     super(args);
-    
+    this.handleSelectAll = this.handleSelectAll.bind(this);
+    this.handleDeselectAll = this.handleDeselectAll.bind(this);
+    this.handleClearCompleted = this.handleClearCompleted.bind(this);
+    this.handleBulkPriorityChange = this.handleBulkPriorityChange.bind(this);
+  }
+
+  afterServicesInjected() {
     this.subscribeStore('todos', 'data');
   }
 
   handleSelectAll() {
-    this.services.TodosService.toggleAllTodos(true);
+    if (this.services?.TodosService) {
+      this.services.TodosService.toggleAllTodos(true);
+    }
   }
 
   handleDeselectAll() {
-    this.services.TodosService.toggleAllTodos(false);
+    if (this.services?.TodosService) {
+      this.services.TodosService.toggleAllTodos(false);
+    }
   }
 
   handleClearCompleted() {
-    if (confirm('Czy na pewno chcesz usunąć wszystkie ukończone zadania?')) {
+    if (this.services?.TodosService && confirm('Czy na pewno chcesz usunąć wszystkie ukończone zadania?')) {
       this.services.TodosService.clearCompletedTodos();
     }
   }
@@ -36,7 +46,8 @@ export class BulkActions extends Component {
   }
 
   render() {
-    const stats = this.services.TodosService.getTodosStats();
+    // Safe access to services - fallback to empty stats if not available yet
+    const stats = this.services?.TodosService?.getTodosStats() || { total: 0 };
     
     if (stats.total === 0) {
       return this.createElement('div', {}, []);

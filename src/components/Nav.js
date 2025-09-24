@@ -6,6 +6,7 @@ export class Nav extends Component {
     super();
     
     this.handleLogout = this.handleLogout.bind(this);
+    this.handleNavigation = this.handleNavigation.bind(this);
   }
 
   afterServicesInjected() {
@@ -15,8 +16,17 @@ export class Nav extends Component {
   handleLogout() {
     if (confirm('Czy na pewno chcesz się wylogować?')) {
       this.services.AuthService.logout();
-      // Reload the page to trigger login form
+      // Navigate to login instead of reload
+      this.services.RouterService.navigate('/', true);
       window.location.reload();
+    }
+  }
+
+  handleNavigation(path) {
+    if (this.services.RouterService) {
+      this.services.RouterService.navigate(path);
+    } else {
+      window.location.hash = path;
     }
   }
 
@@ -28,9 +38,43 @@ export class Nav extends Component {
         this.createElement('nav', { class: 'navbar'}, [
           this.createElement('div', { class: 'navbar-menu' }, [
             this.createElement('div', { class: 'navbar-start' }, [
-              new NavItem({ label: '📋 Todo App', href: '#' }),
-              new NavItem({ label: 'Home', href: '#' }),
-              new NavItem({ label: 'About', href: '#' }),
+              // Create navigation links manually to use router
+              this.createElement(
+                'a',
+                { 
+                  class: 'navbar-item',
+                  href: '#/',
+                  onClick: (event) => {
+                    event.preventDefault();
+                    this.handleNavigation('/');
+                  }
+                },
+                ['📋 Todo App']
+              ),
+              this.createElement(
+                'a',
+                { 
+                  class: 'navbar-item',
+                  href: '#/',
+                  onClick: (event) => {
+                    event.preventDefault();
+                    this.handleNavigation('/');
+                  }
+                },
+                ['Strona główna']
+              ),
+              this.createElement(
+                'a',
+                { 
+                  class: 'navbar-item',
+                  href: '#/about',
+                  onClick: (event) => {
+                    event.preventDefault();
+                    this.handleNavigation('/about');
+                  }
+                },
+                ['O aplikacji']
+              ),
             ]),
             this.createElement('div', { class: 'navbar-end' }, [
               this.createElement('div', { class: 'navbar-item' }, [

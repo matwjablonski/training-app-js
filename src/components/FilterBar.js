@@ -16,7 +16,9 @@ export class FilterBar extends Component {
     
     // Debounce timer for search
     this.searchTimeout = null;
-    
+  }
+
+  afterServicesInjected() {
     this.subscribeStore('todos', 'data');
   }
 
@@ -66,7 +68,14 @@ export class FilterBar extends Component {
   }
 
   render() {
-    const stats = this.services.TodosService.getTodosStats();
+    // Safe access to services - fallback to empty stats if not available yet
+    const stats = this.services?.TodosService?.getTodosStats() || {
+      total: 0,
+      completed: 0,
+      active: 0,
+      overdue: 0,
+      highPriority: 0
+    };
     
     // Use props from parent if available, fallback to local state
     const currentFilter = this.currentFilter || 'all';
