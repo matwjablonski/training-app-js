@@ -66,6 +66,21 @@ export class TodosService extends Service {
     }
   }
 
+  async updateTodo(todoId, updates) {
+    const todos = this.DataStoreService.get('todos');
+    const todo = todos.find(t => t.id === todoId);
+   
+    if (todo) {
+      // Update allowed fields
+      if (updates.task !== undefined) todo.task = updates.task;
+      if (updates.description !== undefined) todo.description = updates.description;
+      if (updates.due_date !== undefined) todo.due_date = updates.due_date;
+      if (updates.priority !== undefined) todo.priority = updates.priority;
+      
+      this.DataStoreService.set('todos', todos);
+    }
+  }
+
   async clearCompletedTodos() {
     const todos = this.DataStoreService.get('todos');
     const activeTodos = todos.filter(t => !t.done);

@@ -3,11 +3,17 @@ import { Component } from '../lib/Component';
 export class TaskActions extends Component {
   constructor(args) {
     super(args);
+    
+    // Set properties from args
+    this.taskId = args.taskId;
+    this.done = args.done;
+    this.priority = args.priority;
 
     // Bind methods
     this.onToggleStatus = this.onToggleStatus.bind(this);
     this.onChangePriority = this.onChangePriority.bind(this);
     this.onRemove = this.onRemove.bind(this);
+    this.onEdit = this.onEdit.bind(this);
   }
 
   afterServicesInjected() {
@@ -42,6 +48,13 @@ export class TaskActions extends Component {
   onRemove() {
     if (this.services?.TodosService) {
       this.services.TodosService.removeTodoById(this.taskId);
+    }
+  }
+
+  onEdit() {
+    // Call parent component's edit handler if provided
+    if (this.onEditHandler) {
+      this.onEditHandler(this.taskId);
     }
   }
 
@@ -90,6 +103,17 @@ export class TaskActions extends Component {
               ]
             )
           ]
+        ),
+        
+        // Edit button
+        this.createElement(
+          'button', 
+          { 
+            class: 'card-footer-item has-text-info', 
+            onClick: this.onEdit,
+            disabled: done || undefined
+          },
+          ['✏️ Edytuj']
         ),
         
         // Remove button

@@ -3,6 +3,7 @@ import { AddTodo } from './AddTodo';
 import { TaskActions } from './TaskActions';
 import { FilterBar } from './FilterBar';
 import { BulkActions } from './BulkActions';
+import { EditTodoForm } from './EditTodoForm';
 
 export class TodosList extends Component {
   constructor(args) {
@@ -11,9 +12,13 @@ export class TodosList extends Component {
     this.currentFilter = 'all';
     this.searchQuery = '';
     this.priorityFilter = 'all';
+    this.editingTodoId = null; // ID of todo being edited
     
     // Bind methods
     this.handleFilterChange = this.handleFilterChange.bind(this);
+    this.handleEditTodo = this.handleEditTodo.bind(this);
+    this.handleSaveEdit = this.handleSaveEdit.bind(this);
+    this.handleCancelEdit = this.handleCancelEdit.bind(this);
   }
 
   afterServicesInjected() {
@@ -33,6 +38,21 @@ export class TodosList extends Component {
     this.currentFilter = filter;
     this.searchQuery = search;
     this.priorityFilter = priority;
+    this.rerender();
+  }
+
+  handleEditTodo(todoId) {
+    this.editingTodoId = todoId;
+    this.rerender();
+  }
+
+  handleSaveEdit() {
+    this.editingTodoId = null;
+    this.rerender();
+  }
+
+  handleCancelEdit() {
+    this.editingTodoId = null;
     this.rerender();
   }
 
@@ -159,6 +179,26 @@ export class TodosList extends Component {
               filteredTodos.map(({ task, description, done, id, priority, due_date, created_at }) => {
                 const isTaskOverdue = this.isOverdue(due_date, done);
                 
+                // If this todo is being edited, render the edit form
+                if (this.editingTodoId === id) {
+                  const editForm = new EditTodoForm({
+                    todo: { task, description, done, id, priority, due_date, created_at },
+                    onSaveCallback: this.handleSaveEdit,
+                    onCancelCallback: this.handleCancelEdit
+                  });
+                  
+                  // Manually inject services
+                  if (this.services && editForm.injectServices) {
+                    editForm.injectServices(this.services);
+                  }
+                  
+                  return this.createElement(
+                    'div',
+                    { class: 'cell' },
+                    [editForm]
+                  );
+                }
+                
                 return this.createElement(
                   'div',
                   { 
@@ -225,7 +265,8 @@ export class TodosList extends Component {
                         removeLabel: 'Usuń zadanie', 
                         done: done,
                         taskId: id,
-                        priority: priority
+                        priority: priority,
+                        onEditHandler: (todoId) => this.handleEditTodo(todoId)
                       });
                       
                       // Manually inject services before using the component
