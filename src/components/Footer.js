@@ -12,7 +12,7 @@ export class Footer extends Component {
         class: 'footer',
       },
       [
-        '<div class="container"><p>© 2025 MyCleaning App</p></div>'
+        '<div class="container"><p>© 2025 Todo App</p></div>'
       ]);
   }
 }
